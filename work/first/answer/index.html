@@ -26,7 +26,7 @@
       </div>
       <h2 class="sub-title">Q4</h2>
       <div class="question">
-        <div class="btn" id="q4">Q4</div>
+        <div class="btn" id="q4" value="test">Q4</div>
       </div>
       <h2 class="sub-title">Q5</h2>
       <div class="question">
@@ -95,6 +95,7 @@
         // fadeOut() fadeOutメソッドはフェードアウトするメソッドである。問題なのは()内に2000という値が書かれているところである。
         // click(),fadeOut()　どちらも()があり、そこに値とか関数を書いている。これを「引数」と呼ぶ。
         // この引数と呼ばれるものが関数を柔軟なものにしてくれる。fadeOut()の中の2000は、ミリ秒を示しており、2秒かけてDOMが消える。10000でも良いし、10でもいい。必ず何秒で実行するという関数だと、ある場合においてでしか使えない。
+        // console.log($('#q4').length.append());
         $('#q4').click(function() {
           $(this).prepend('DOMの中の前')
                  .append('DOMの中の後')
