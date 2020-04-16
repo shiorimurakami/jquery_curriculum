@@ -26,64 +26,81 @@
     </div>
     <script src="../../common/js/jquery.js"></script>
     <script>
-      // 楽天ブックスの総合検索APIを使って製作してください。
-      // answerの挙動を良く見てね！
-      //
-      // 下記URLにAPIの仕様が載ってるいので、ブラウザで開いて参考にしてください。
-      // https://webservice.rakuten.co.jp/api/bookstotalsearch/
-      //
-      //
-      // [使うメソッド]
-      // $.each(配列, function functionName() {}) 配列に対しての繰り返し処理
-      // $.ajax({}) 外部ファイルやURLに対してデータをリクエストすることができます。
-      // 以下は今回使う$.ajaxの基本的な形です。
-      //
-      // $.ajax({
-      //   url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
-      //   type: 'GET',
-      //   datatype: 'json',
-      //   data: {
-      //     // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
-      //     applicationId: '1019399324990976605', // (今回はこのIDを使用してください) ※IDは他サイト等には絶対に転載しないでください
-      //     booksGenreId: '001'
-      //   },
-      // }).done(function(data) {
-      //   // この中にデータ取得後の動きを記述していきます。
-      //   console.log(data);
-      // });
-      //
-      //
-      // $.ajaxによってデータが取得できたら、必要なデータ(作品名とか作者名とか)を取得します。
-      // 取得できたらHTMLに<ul class='lists'></ul>を用意しているので、下のテンプレに沿ってデータを入れ込みましょう。
-      // <li class='lists__item'>
-      //  <div class='lists__item__inner'>
-      //    <a href='' class='lists__item__link' target='_blank'>
-      //      <img src='' class='lists__item__img' alt=''>
-      //      <p class='lists__item__detail'>作品名：</p>
-      //      <p class='lists__item__detail'>作者　：</p>
-      //      <p class='lists__item__detail'>出版社：</p>
-      //    </a>
-      //  </div>
-      // </li>
-      //
-      // 取得できた書籍の件数をもとに、ページャを作成しましょう
-      // ページャの条件
-      // ├ 「前へ」と「次へ」のボタンがある
-      // ├ 1ページ目では「前へ」に、最後のページでは「次へ」にdisabledクラスをつけて非活性（使用不能）にする
-      // └ 1ページしかない場合はどちらもdisabledクラスをつけて非活性にする
-      // 
-      // ページャのテンプレート
-      // <div class="js-pager">
-      //   <ul class="btn-wrapper">
-      //     <li class="prev btn-item"><a class="btn-anchor" href="">前へ</a></li>
-      //     <li class="next btn-item"><a class="btn-anchor" href="">次へ</a></li>
-      //   </ul>
-      // </div>
-      //
-      //
+      $(function() {
+        // 楽天ブックスの総合検索APIを使って製作してください。
+        // answerの挙動を良く見てね！
+        //
+        // 下記URLにAPIの仕様が載ってるいので、ブラウザで開いて参考にしてください。
+        // https://webservice.rakuten.co.jp/api/bookstotalsearch/
+        //
+        //
+        // [使うメソッド]
+        // $.each(配列, function functionName() {}) 配列に対しての繰り返し処理
+        // $.ajax({}) 外部ファイルやURLに対してデータをリクエストすることができます。
+        // 以下は今回使う$.ajaxの基本的な形です。
+        //
+
+        $('#js-search-button').on('click',function() {
+          var enteredWord =$('#js-search-word').val();
+          $.ajax({
+            url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+            type: 'GET',
+            datatype: 'json',  //あなたが期待するサーバーから返されるデータの型を指定します。"json"<-JSONとしてレスポンスを評価し、JavaScriptオブジェクトが返されます。
+            data: {
+              // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
+              applicationId: '1019399324990976605', // (今回はこのIDを使用してください) ※IDは他サイト等には絶対に転載しないでください
+              booksGenreId: '001',
+              keyword: enteredWord,
+              hits: 20,
+            },
+            
+          }).done(function(data) {
+            // この中にデータ取得後の動きを記述していきます。
+            console.log(data);
+            console.log($(this));
+
+            $(data.Items).each(function(index,element) {
+              console.log(element);
+              var result = $("<li class='lists__item'><div class='lists__item__inner'><a href='+.element.item.itemUrl+' class='lists__item__link' target='_blank'><img src='' class='lists__item__img' alt=''><p class='lists__item__detail'>作品名：</p><p class='lists__item__detail'>作者　：</p><p class='lists__item__detail'>出版社：</p></a></div></li>")
+            });
+            $('.lists').append(result);
+
+          }).fail(function() {
+            alert('検索結果がみつかりません');
+          })
+          // $('#js-search-button').on('click', function() {
+            //   test(); // 定義したtestという関数の実行
+            // });
+            // $('.test-2').on('click', function() {
+              //   test(); // 定義したtestという関数の実行
+              // });
+              // function test() {// '.test-1'と'.test-2'がクリックされたときの処理がここに書かれている}
+            });
+            //
+            //
+            // $.ajaxによってデータが取得できたら、必要なデータ(作品名とか作者名とか)を取得します。
+            // 取得できたらHTMLに<ul class='lists'></ul>を用意しているので、下のテンプレに沿ってデータを入れ込みましょう。
+
+            //
+            // 取得できた書籍の件数をもとに、ページャを作成しましょう
+            // ページャの条件
+            // ├ 「前へ」と「次へ」のボタンがある
+            // ├ 1ページ目では「前へ」に、最後のページでは「次へ」にdisabledクラスをつけて非活性（使用不能）にする
+            // └ 1ページしかない場合はどちらもdisabledクラスをつけて非活性にする
+            // 
+            // ページャのテンプレート
+            // <div class="js-pager">
+        //   <ul class="btn-wrapper">
+        //     <li class="prev btn-item"><a class="btn-anchor" href="">前へ</a></li>
+        //     .append('<li class="next btn-item"><a class="btn-anchor" href="">次へ</a></li>')
+        //   </ul>
+        // </div>
+        //
+        //
 
 
 
+      });
     </script>
   </body>
 </html>

@@ -101,23 +101,31 @@
         // $().each() DOM要素を1つずつループ処理をする（ループ内で$(this)を使うと要素がひとつずつ取得できる）
 
         $('.select').change(function() {
-          $(".list li").hide();
+          // $(".list li").hide();
           var text = $('option:selected').val();
           // console.log(text);
-          $('.list li').each(function() {
-            var type = $(this).data('category-type')
-            // console.log(data('category-type'));
-            if(text == 'all') {
-              $('.list li').show();
-            } else if(text == type) {
-              $(this).show();
-            } else {
+          console.log('--------------------------------');
+          console.log(text);
+          if(text === 'all') {
+            $('.list li').show();
+          } else {
+            $('.list li').each(function(index,element) {
+              // console.log(index);
+              console.log(element);
               console.log(type);
-              $(this).hide();
-            }
-          });
+
+              if(text === type) {
+                $(element).show();
+                // $().show();
+              } else {
+                $(element).hide();
+              }
+            });
+          }
+          console.log('--------------------------------');
         });
       });
+        //:（コロン）に続けてselectedを設定するとselect要素で選択されている要素を選択する。対応している要素はoption要素のみ
     </script>
   </body>
 </html>
