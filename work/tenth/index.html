@@ -53,7 +53,7 @@
               booksGenreId: '001',
               keyword: enteredWord,
               hits: 20,
-              page: page, //エラーになる(;_:)
+              page: page,
             },
 
           }).done(function(data) {
@@ -61,10 +61,10 @@
             console.log(data);
             console.log($(this));
             
-            var result = '';
+            var result = ''; //eachの外でも使えるようにeachの外で宣言
             $.each(data.Items,function(index,element) {
               console.log(element);
-              result += "<li class='lists__item'>"+
+              result += "<li class='lists__item'>"+  //+=でresultに結果をどんどん足している
                              "<div class='lists__item__inner'>"+
                                 "<a href='"+element.Item.itemUrl+"' class='lists__item__link' target='_blank'>"+
                                   "<img src='"+element.Item.largeImageUrl+"' class='lists__item__img' alt='"+"ほんの写真"+"'>"+
@@ -88,35 +88,47 @@
             $('.lists').after(pager);
             console.log(pager);
 
-            $('.prev btn-item').on('click',function() {
+            var page = function() {
+              if(date.Items > 20) {
+                page = 1
+              } else {
+                for (var i = 2; i < data.Items.length; i++) {
+                  page[i] =20*i+1
+                }
+              }
+            }
+
+            $('.prev').on('click',function() {
               test();
             });
-            $('.next btn-item').on('click',function() {
+            $('.next').on('click',function() {
               test();
             });
             function test() {
               if(page === 1) { //最初のページなら
-                $('.prev btn-item').disabled = true; //前へは無効化
-                $('.next btn-item').on('click',function() {
+                $('.prev').addClass('disabled'); //前へは無効化
+                $('.next').on('click',function() {
                   window.history.forward();  //次へは次へのページへ
                 });
-              } else if () { //最後のページなら
-                $('.next btn-item').disabled = true; //次へは無効化
-                $('.prev btn-item').on('click',function() {
+              } else if (page === last) { //最後のページなら
+                $('.next').addClass('disabled'); //次へは無効化
+                $('.prev').on('click',function() {
                   window.history.back();//前へは前へのページへ
                 });
               } else {  //最初でも最後のページでもなければ
-                $('.prev btn-item').on('click',function() {
+                $('.prev').on('click',function() {
                   window.history.back();//前へは前へのページへ
                 });
-                $('.next btn-item').on('click',function() {
+                $('.next').on('click',function() {
                   window.history.forward();//次へは次へのページへ
                 });
               }
             }
           }).fail(function() {
-            $('.lists').after('<p>検索文字が空、もしくは半角英数1文字になっています</p>');
-            $(this).css('textAlign', 'center');
+            $('.message').remove();
+            $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
+            // $('.lists').after('<p>検索文字が空、もしくは半角英数1文字になっています</p>');
+            // $(this).css('textAlign', 'center');
           });
             //
             //
