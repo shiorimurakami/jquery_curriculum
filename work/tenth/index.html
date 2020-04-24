@@ -26,110 +26,239 @@
     </div>
     <script src="../../common/js/jquery.js"></script>
     <script>
-      $(function() {
         // 楽天ブックスの総合検索APIを使って製作してください。
         // answerの挙動を良く見てね！
         //
         // 下記URLにAPIの仕様が載ってるいので、ブラウザで開いて参考にしてください。
         // https://webservice.rakuten.co.jp/api/bookstotalsearch/
         //
-        //
         // [使うメソッド]
         // $.each(配列, function functionName() {}) 配列に対しての繰り返し処理
         // $.ajax({}) 外部ファイルやURLに対してデータをリクエストすることができます。
         // 以下は今回使う$.ajaxの基本的な形です。
         //
+      $(function() {
+        var param = {
+          applicationId: '1019399324990976605',
+          booksGenreId: '001',
+          keyword: '',
+          hits: 20,
+          page: 1,
+        };
 
+        var pager = "<div class='js-pager'>" +
+                      "<ul class='btn-wrapper'>" +
+                        "<li class='prev btn-item'>" +
+                          "<a class='btn-anchor' href='#'>前へ</a>" +
+                        "</li>" +
+                        "<li class='next btn-item'>" +
+                          "<a class='btn-anchor' href='#'>次へ</a>" +
+                        "</li>" +
+                          // ".append('<li class='next btn-item'><a class='btn-anchor' href=''>次へ</a></li>)"+
+                      "</ul>" +
+                    "</div>"
+
+        // console.log(pager);
+        //【問題点】
+        //①検索2回目に1回目の検索で最後に見たページと同じページにいってしまう
+        //  →例えば1回目の検索で2ページ目までにいって違うワードを検索すると新しく検索したワードの2ページ目が表示されてしまう
+        //  →pageがリセットできていない
+
+        //②最後のページにいっても次へが生きてる
+
+
+        // こっちの書き方だとイベント登録できる
+        $(document).on('click', '.prev', function(e) {
+          console.log(e);
+          if(param.page < 2) {
+            $('.prev').addClass('disabled'); //前へは無効化
+            return false;
+          } else {
+            param.page--; // パラメーターのpageをいじる
+            searchBooks(param);
+            console.log(param);
+          }
+        });
+
+        $(document).on('click', '.next', function() {
+          if(param.page === param.pageCount) {  //ここ死んでる！！！！！！！！！！！！！！！生きろ！そなたは美しい！！
+            $('.next').addClass('disabled'); //次へは無効化
+            return false;
+          } else {
+            param.page++;
+            searchBooks(param);
+            console.log(param);
+          }
+        });
+
+        // 検索クリックした時の処理
         $('#js-search-button').on('click',function() {
           $('.lists__item').remove();
           var enteredWord = $('#js-search-word').val();
+          param.keyword = enteredWord;
+          searchBooks(param);
+        });
+
+
+        // 本を件する関数
+        function searchBooks(param) {
+          // ajaxの成功時と失敗時の処理
           $.ajax({
             url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
             type: 'GET',
             datatype: 'json',  //あなたが期待するサーバーから返されるデータの型を指定します。"json"<-JSONとしてレスポンスを評価し、JavaScriptオブジェクトが返されます。
-            data: {
-              // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
-              applicationId: '1019399324990976605', // (今回はこのIDを使用してください) ※IDは他サイト等には絶対に転載しないでください
-              booksGenreId: '001',
-              keyword: enteredWord,
-              hits: 20,
-              page: page,
-            },
+            data: param,
 
           }).done(function(data) {
-            // この中にデータ取得後の動きを記述していきます。
-            console.log(data);
-            console.log($(this));
-            
-            var result = ''; //eachの外でも使えるようにeachの外で宣言
+            success(data);
+          }).fail(function(error) {
+            miss(error);
+          });
+        }
+
+        // ajax成功時処理
+        function success(data) {
+          $('.js-pager').remove();  //ここ
+          $('.lists li').remove();
+          $(param.page).remove();
+
+          var result = ''; //eachの外でも使えるようにeachの外で宣言
             $.each(data.Items,function(index,element) {
               console.log(element);
               result += "<li class='lists__item'>"+  //+=でresultに結果をどんどん足している
-                             "<div class='lists__item__inner'>"+
-                                "<a href='"+element.Item.itemUrl+"' class='lists__item__link' target='_blank'>"+
-                                  "<img src='"+element.Item.largeImageUrl+"' class='lists__item__img' alt='"+"ほんの写真"+"'>"+
-                                  "<p class='lists__item__detail'>作品名："+element.Item.title+"</p>"+
-                                  "<p class='lists__item__detail'>作者　："+element.Item.author+"</p>"+
-                                  "<p class='lists__item__detail'>出版社："+element.Item.publisherName+"</p>"+
-                                "</a>"+
-                              "</div>"+
-                            "</li>"
+                          "<div class='lists__item__inner'>"+
+                            "<a href='"+element.Item.itemUrl+"' class='lists__item__link' target='_blank'>"+
+                              "<img src='"+element.Item.largeImageUrl+"' class='lists__item__img' alt='"+"ほんの写真"+"'>"+
+                              "<p class='lists__item__detail'>作品名："+element.Item.title+"</p>"+
+                              "<p class='lists__item__detail'>作者　："+element.Item.author+"</p>"+
+                              "<p class='lists__item__detail'>出版社："+element.Item.publisherName+"</p>"+
+                            "</a>"+
+                          "</div>"+
+                        "</li>"
             });
-            $('.lists').append(result);
-            var pager = "<div class='js-pager'>"+
-              "<ul class='btn-wrapper'>"+
-                "<li class='prev btn-item'>"+
-                  "<a class='btn-anchor' href=''>前へ</a>"+
-                  "</li>"+
-                  "<li class='next btn-item'><a class='btn-anchor' href=''>次へ</a></li>"+
-                  // ".append('<li class='next btn-item'><a class='btn-anchor' href=''>次へ</a></li>)"+
-                  "</ul>"+
-                  "</div>"
-            $('.lists').after(pager);
-            console.log(pager);
+          $('.lists').append(result);
+          // console.log(data);
+          $('.lists').after(pager);
+          if(param.page === 1) {
+            $('.prev').addClass('disabled'); //前へは無効化
+          } else {
+            $('.prev').removeClass('disabled');
+          }
+          if(param.page === param.pageCount) {  //多分ここも死んでる！！！！！！！！！！！生きろ！そなたも美しい！！
+            $('.next').addClass('disabled');
+          } else {
+            $('.next').removeClass('disabled');
+          }
+        }
 
-            var page = function() {
-              if(date.Items > 20) {
-                page = 1
-              } else {
-                for (var i = 2; i < data.Items.length; i++) {
-                  page[i] =20*i+1
-                }
-              }
-            }
-
-            $('.prev').on('click',function() {
-              test();
-            });
-            $('.next').on('click',function() {
-              test();
-            });
-            function test() {
-              if(page === 1) { //最初のページなら
-                $('.prev').addClass('disabled'); //前へは無効化
-                $('.next').on('click',function() {
-                  window.history.forward();  //次へは次へのページへ
-                });
-              } else if (page === last) { //最後のページなら
-                $('.next').addClass('disabled'); //次へは無効化
-                $('.prev').on('click',function() {
-                  window.history.back();//前へは前へのページへ
-                });
-              } else {  //最初でも最後のページでもなければ
-                $('.prev').on('click',function() {
-                  window.history.back();//前へは前へのページへ
-                });
-                $('.next').on('click',function() {
-                  window.history.forward();//次へは次へのページへ
-                });
-              }
-            }
-          }).fail(function() {
+        // ajax失敗時の処理
+        function miss(error) {
             $('.message').remove();
+            //検索ワードの指定がない
+            //検索ワードが半角英数字1文字
+            if(jqXHR = 501) {
+            //ネットが切れている
+            $('.lists').before('<div class="message">ネットにつながっていません。</div>');
+            } else if(enteredWord ) {
+            //「検索する」を連打したとき
+            $('.lists').before('<div class="message">ボタン連打しないでください。困ります。</div>');
+            } else {
             $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
+
+            }
+            
+            
+        }
+      });
+        // $('#js-search-button').on('click',function() {
+        //   $('.lists__item').remove();
+        //   var enteredWord = $('#js-search-word').val();
+        //   $.ajax({
+        //     url: 'https://app.rakuten.co.jp/services/api/BooksTotal/Search/20130522',
+        //     type: 'GET',
+        //     datatype: 'json',  //あなたが期待するサーバーから返されるデータの型を指定します。"json"<-JSONとしてレスポンスを評価し、JavaScriptオブジェクトが返されます。
+        //     data: {
+        //       // 「区分:サービス固有パラメーター」を確認して、必要な情報をdata内に入れましょう。
+        //       applicationId: '1019399324990976605', // (今回はこのIDを使用してください) ※IDは他サイト等には絶対に転載しないでください
+        //       booksGenreId: '001',
+        //       keyword: enteredWord,
+        //       hits: 20,
+        //       page: page,
+        //     },
+
+        //   }).done(function(data) {
+        //     // この中にデータ取得後の動きを記述していきます。
+        //     console.log(data);
+        //     console.log($(this));
+
+            // var result = ''; //eachの外でも使えるようにeachの外で宣言
+            // $.each(data.Items,function(index,element) {
+            //   console.log(element);
+            //   result += "<li class='lists__item'>"+  //+=でresultに結果をどんどん足している
+            //                  "<div class='lists__item__inner'>"+
+            //                     "<a href='"+element.Item.itemUrl+"' class='lists__item__link' target='_blank'>"+
+            //                       "<img src='"+element.Item.largeImageUrl+"' class='lists__item__img' alt='"+"ほんの写真"+"'>"+
+            //                       "<p class='lists__item__detail'>作品名："+element.Item.title+"</p>"+
+            //                       "<p class='lists__item__detail'>作者　："+element.Item.author+"</p>"+
+            //                       "<p class='lists__item__detail'>出版社："+element.Item.publisherName+"</p>"+
+            //                     "</a>"+
+            //                   "</div>"+
+            //                 "</li>"
+            // });
+            // $('.lists').append(result);
+        //     var pager = "<div class='js-pager'>"+
+        //       "<ul class='btn-wrapper'>"+
+        //         "<li class='prev btn-item'>"+
+        //           "<a class='btn-anchor' href=''>前へ</a>"+
+        //           "</li>"+
+        //           "<li class='next btn-item'><a class='btn-anchor' href=''>次へ</a></li>"+
+        //           // ".append('<li class='next btn-item'><a class='btn-anchor' href=''>次へ</a></li>)"+
+        //           "</ul>"+
+        //           "</div>"
+        //     $('.lists').after(pager);
+        //     console.log(pager);
+
+        //     var page = function() {
+        //       if(date.Items > 20) {
+        //         page = 1
+        //       } else {
+        //         for (var i = 2; i < data.Items.length; i++) {
+        //           page[i] =20*i+1
+        //         }
+        //       }
+        //     }
+
+        //     $('.prev').on('click',function() {
+        //       test();
+        //     });
+        //     $('.next').on('click',function() {
+        //       test();
+        //     });
+        //     function test() {
+        //       if(page === 1) { //最初のページなら
+        //         $('.prev').addClass('disabled'); //前へは無効化
+        //         $('.next').on('click',function() {
+        //           window.history.forward();  //次へは次へのページへ
+        //         });
+        //       } else if (page === last) { //最後のページなら
+        //         $('.next').addClass('disabled'); //次へは無効化
+        //         $('.prev').on('click',function() {
+        //           window.history.back();//前へは前へのページへ
+        //         });
+        //       } else {  //最初でも最後のページでもなければ
+        //         $('.prev').on('click',function() {
+        //           window.history.back();//前へは前へのページへ
+        //         });
+        //         $('.next').on('click',function() {
+        //           window.history.forward();//次へは次へのページへ
+        //         });
+        //       }
+        //     }
+        //   }).fail(function() {
+        //     $('.message').remove();
+        //     $('.lists').before('<div class="message">検索文字が空、もしくは半角英数1文字になっています</div>');
             // $('.lists').after('<p>検索文字が空、もしくは半角英数1文字になっています</p>');
             // $(this).css('textAlign', 'center');
-          });
             //
             //
             // $.ajaxによってデータが取得できたら、必要なデータ(作品名とか作者名とか)を取得します。
@@ -145,10 +274,7 @@
             // ページャのテンプレート
         //
         //
-        });
-
-
-      });
+        // });
     </script>
   </body>
 </html>
