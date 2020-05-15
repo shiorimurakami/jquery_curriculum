@@ -106,14 +106,15 @@
           // console.log(text);
           // console.log('--------------------------------');
           console.log(text);
+
           if(text === 'all') {
             $('.list li').show();
           } else {
             $('.list li').each(function(index,element) {
+              var type = $(element).data('category-type');
               // console.log(index);
               console.log(element);
               console.log(type);
-
               if(text === type) {
                 $(element).show();
                 // $().show();
